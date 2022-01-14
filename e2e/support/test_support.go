@@ -74,6 +74,7 @@ import (
 	"github.com/apache/camel-k/pkg/util/defaults"
 	"github.com/apache/camel-k/pkg/util/kubernetes"
 	"github.com/apache/camel-k/pkg/util/log"
+	"github.com/apache/camel-k/pkg/util/olm"
 	"github.com/apache/camel-k/pkg/util/openshift"
 	"github.com/apache/camel-k/pkg/util/patch"
 
@@ -1429,6 +1430,23 @@ func CreateOperatorRole(ns string) (err error) {
 	if err != nil {
 		return err
 	}
+
+	/*
+	 * The service-account will need olm access permissions
+	 * if, for example, installing the operator through a tekton pod
+	 * configuration
+	 */
+	var olmAvailable bool
+	if olmAvailable, err = olm.IsAPIAvailable(TestContext, TestClient(), ns); err != nil {
+		return errors.Wrap(err, "error while checking OLM availability. Run with '--olm=false' to skip this check")
+	}
+	if olmAvailable {
+		err = install.Resource(TestContext, TestClient(), ns, true, install.IdentityResourceCustomizer, "/rbac/operator-role-olm.yaml")
+		if err != nil {
+			return err
+		}
+	}
+
 	if oc {
 		return install.Resource(TestContext, TestClient(), ns, true, install.IdentityResourceCustomizer, "/rbac/openshift/operator-role-openshift.yaml")
 	}
@@ -1444,6 +1462,23 @@ func CreateOperatorRoleBinding(ns string) error {
 	if err != nil {
 		return err
 	}
+
+	/*
+	 * The service-account will need olm access permissions
+	 * if, for example, installing the operator through a tekton pod
+	 * configuration
+	 */
+	var olmAvailable bool
+	if olmAvailable, err = olm.IsAPIAvailable(TestContext, TestClient(), ns); err != nil {
+		return errors.Wrap(err, "error while checking OLM availability. Run with '--olm=false' to skip this check")
+	}
+	if olmAvailable {
+		err = install.Resource(TestContext, TestClient(), ns, true, install.IdentityResourceCustomizer, "/rbac/operator-role-olm-binding.yaml")
+		if err != nil {
+			return err
+		}
+	}
+
 	if oc {
 		return install.Resource(TestContext, TestClient(), ns, true, install.IdentityResourceCustomizer, "/rbac/openshift/operator-role-binding-openshift.yaml")
 	}

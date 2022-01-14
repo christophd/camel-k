@@ -38,11 +38,11 @@ const (
 	// v1alpha1.Kamelet,  v1alpha1.KameletBinding
 	ExpCrds = 6
 
-	// camel-k-operator, 			 camel-k-operator-events,
-	// camel-k-operator-knative, 	 camel-k-operator-leases,
+	// camel-k-operator, 			       camel-k-operator-events,
+	// camel-k-operator-knative, 	   camel-k-operator-leases,
 	// camel-k-operator-podmonitors, camel-k-operator-strimzi,
-	// camel-k-operator-keda
-	ExpKubePromoteRoles = 7
+	// camel-k-operator-keda,        camel-k-operator-olm
+	ExpKubePromoteRoles = 8
 
 	// camel-k-edit
 	// camel-k-operator-custom-resource-definitions
