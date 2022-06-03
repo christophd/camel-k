@@ -36,7 +36,7 @@ import (
 func TestSecondaryPlatform(t *testing.T) {
 	WithNewTestNamespace(t, func(ns string) {
 		Expect(Kamel("install", "-n", ns).Execute()).To(Succeed())
-		Expect(ConfigureSecondayPlatfromWith(ns, func(p *v1.IntegrationPlatform) {
+		Expect(ConfigureSecondaryPlatformWith(ns, func(p *v1.IntegrationPlatform) {
 			p.Name = "secondary"
 			if p.Spec.Traits == nil {
 				p.Spec.Traits = make(map[string]v1.TraitSpec)
