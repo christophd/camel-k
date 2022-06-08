@@ -272,7 +272,7 @@ func (t *quarkusTrait) newIntegrationKit(e *Environment, packageType quarkusPack
 	}
 	operatorID := defaults.OperatorID()
 	if operatorID != "" {
-		kit.Annotations[v1.OperatorIDAnnotation] = operatorID
+		kit.SetOperatorID(operatorID)
 	}
 
 	traits := t.getKitTraits(e)

@@ -209,7 +209,7 @@ func (t *containerTrait) configureImageIntegrationKit(e *Environment) error {
 		}
 		operatorID := defaults.OperatorID()
 		if operatorID != "" {
-			kit.Annotations[v1.OperatorIDAnnotation] = operatorID
+			kit.SetOperatorID(operatorID)
 		}
 
 		t.L.Infof("image %s", kit.Spec.Image)
