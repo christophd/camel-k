@@ -47,8 +47,9 @@ import (
 func TestMetrics(t *testing.T) {
 	WithNewTestNamespace(t, func(ns string) {
 		name := "java"
-		Expect(Kamel("install", "-n", ns).Execute()).To(Succeed())
-		Expect(Kamel("run", "-n", ns, "files/Java.java",
+		operatorID := "camel-k-metrics"
+		Expect(KamelInstallWithID(operatorID, ns).Execute()).To(Succeed())
+		Expect(KamelRunWithID(operatorID, ns, "files/Java.java",
 			"-t", "prometheus.enabled=true",
 			"-t", "prometheus.pod-monitor=false",
 		).Execute()).To(Succeed())

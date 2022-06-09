@@ -201,6 +201,24 @@ func Kamel(args ...string) *cobra.Command {
 	return KamelWithContext(TestContext, args...)
 }
 
+func KamelInstall(namespace string, args ...string) *cobra.Command {
+	return KamelInstallWithID(platform.DefaultPlatformName, namespace, args...)
+}
+
+func KamelInstallWithID(operatorID string, namespace string, args ...string) *cobra.Command {
+	installArgs := append([]string{"install", "-n", namespace, "--operator-id", operatorID}, args...)
+	return KamelWithContext(TestContext, installArgs...)
+}
+
+func KamelRun(namespace string, args ...string) *cobra.Command {
+	return KamelRunWithID(platform.DefaultPlatformName, namespace, args...)
+}
+
+func KamelRunWithID(operatorID string, namespace string, args ...string) *cobra.Command {
+	installArgs := append([]string{"run", "-n", namespace, "--operator-id", operatorID}, args...)
+	return KamelWithContext(TestContext, installArgs...)
+}
+
 func KamelWithContext(ctx context.Context, args ...string) *cobra.Command {
 	var c *cobra.Command
 	var err error
@@ -1134,6 +1152,16 @@ func BuildPhase(ns, name string) func() v1.BuildPhase {
 	}
 }
 
+func HasPlatform(ns string) func() bool {
+	return func() bool {
+		lst := v1.NewIntegrationPlatformList()
+		if err := TestClient().List(TestContext, &lst, ctrl.InNamespace(ns)); err != nil {
+			return false
+		}
+		return len(lst.Items) > 0
+	}
+}
+
 func Platform(ns string) func() *v1.IntegrationPlatform {
 	return func() *v1.IntegrationPlatform {
 		lst := v1.NewIntegrationPlatformList()
@@ -1755,6 +1783,17 @@ func InvokeUserTestCode(t *testing.T, ns string, doRun func(string)) {
 			if err := util.Dump(TestContext, TestClient(), ns, t); err != nil {
 				t.Logf("Error while dumping namespace %s: %v\n", ns, err)
 			}
+		}
+
+		// Try to clean up namespace
+		if HasPlatform(ns)() {
+			t.Logf("Clean up test namespace: %s", ns)
+
+			if err := Kamel("uninstall", "-n", ns, "--skip-crd", "--skip-cluster-roles").Execute(); err != nil {
+				t.Logf("Error while cleaning up namespace %s: %v\n", ns, err)
+			}
+
+			t.Logf("Successfully cleaned up test namespace: %s", ns)
 		}
 	}()
 

@@ -152,9 +152,9 @@ export KAMEL_INSTALL_OPERATOR_IMAGE=${CUSTOM_IMAGE}:${CUSTOM_VERSION}
 export KAMEL_INSTALL_OPERATOR_IMAGE_PULL_POLICY="Always"
 
 #
-# Install the operator
+# Install the operator to local namespace
 #
-kamel install -n ${NAMESPACE} --olm=${has_olm}
+kamel install -n ${NAMESPACE} --olm=${has_olm} --global=false --operator-id=camel-k-preflight
 if [ $? != 0 ]; then
   echo "Error: kamel install returned an error."
   exit 1
@@ -203,5 +203,16 @@ if [ "${camel_op_commit}" != "${src_commit}" ]; then
   echo "Preflight Test: Failure - Installed operator commit id (${camel_op_commit}) does not match expected commit id (${src_commit})"
   exit 1
 fi
+
+#
+# Remove the operator from local namespace
+#
+kamel uninstall -n ${NAMESPACE}
+if [ $? != 0 ]; then
+  echo "Error: kamel uninstall returned an error."
+  exit 1
+fi
+
+kubectl delete ns ${NAMESPACE}
 
 echo "Preflight Test: Success"

@@ -34,26 +34,27 @@ import (
 
 func TestKamelCLIBind(t *testing.T) {
 	WithNewTestNamespace(t, func(ns string) {
-		Expect(Kamel("install", "-n", ns).Execute()).To(Succeed())
+		operatorID := "camel-k-cli-bind"
+		Expect(KamelInstallWithID(operatorID, ns).Execute()).To(Succeed())
 		Expect(CreateTimerKamelet(ns, "test-timer-source")()).To(Succeed())
 
 		t.Run("bind timer to log", func(t *testing.T) {
-			Expect(Kamel("bind", "test-timer-source", "log:info", "-p", "source.message=helloTest", "-n", ns).Execute()).To(Succeed())
+			Expect(Kamel("bind", "test-timer-source", "log:info", "-p", "source.message=helloTest", "-n", ns, "--operator-id", operatorID).Execute()).To(Succeed())
 			Eventually(IntegrationPodPhase(ns, "test-timer-source-to-log"), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 
 			Eventually(IntegrationLogs(ns, "test-timer-source-to-log")).Should(ContainSubstring("Body: helloTest"))
-			Expect(Kamel("bind", "test-timer-source", "log:info", "-p", "source.message=newText", "-n", ns).Execute()).To(Succeed())
+			Expect(Kamel("bind", "test-timer-source", "log:info", "-p", "source.message=newText", "-n", ns, "--operator-id", operatorID).Execute()).To(Succeed())
 			Eventually(IntegrationLogs(ns, "test-timer-source-to-log")).Should(ContainSubstring("Body: newText"))
 
 			Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
 		})
 
 		t.Run("unsuccessful binding, no property", func(t *testing.T) {
-			Expect(Kamel("bind", "timer-source", "log:info", "-n", ns).Execute()).NotTo(Succeed())
+			Expect(Kamel("bind", "timer-source", "log:info", "-n", ns, "--operator-id", operatorID).Execute()).NotTo(Succeed())
 		})
 
 		t.Run("bind uris", func(t *testing.T) {
-			Expect(Kamel("bind", "timer:foo", "log:bar", "-n", ns).Execute()).To(Succeed())
+			Expect(Kamel("bind", "timer:foo", "log:bar", "-n", ns, "--operator-id", operatorID).Execute()).To(Succeed())
 			Eventually(IntegrationPodPhase(ns, "timer-to-log"), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 			Eventually(IntegrationLogs(ns, "timer-to-log")).Should(ContainSubstring("Body is null"))
 

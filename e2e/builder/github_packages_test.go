@@ -41,8 +41,8 @@ func TestRunWithGithubPackagesRegistry(t *testing.T) {
 		t.Skip("no github packages data: skipping")
 	} else {
 		WithNewTestNamespace(t, func(ns string) {
-			Expect(Kamel("install",
-				"-n", ns,
+			operatorID := "camel-k-github-registry"
+			Expect(KamelInstallWithID(operatorID, ns,
 				"--registry", "docker.pkg.github.com",
 				"--organization", repo,
 				"--registry-auth-username", user,
@@ -50,7 +50,7 @@ func TestRunWithGithubPackagesRegistry(t *testing.T) {
 				"--cluster-type", "kubernetes").
 				Execute()).To(Succeed())
 
-			Expect(Kamel("run", "-n", ns, "files/groovy.groovy").Execute()).To(Succeed())
+			Expect(KamelRunWithID(operatorID, ns, "files/groovy.groovy").Execute()).To(Succeed())
 			Eventually(IntegrationPodPhase(ns, "groovy"), TestTimeoutMedium).Should(Equal(v1.PodRunning))
 			Eventually(IntegrationLogs(ns, "groovy"), TestTimeoutShort).Should(ContainSubstring("Magicstring!"))
 			Eventually(IntegrationPodImage(ns, "groovy"), TestTimeoutShort).Should(HavePrefix("docker.pkg.github.com"))
