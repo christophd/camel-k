@@ -42,7 +42,7 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/tools/record"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 
 	"go.uber.org/zap/zapcore"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -242,10 +242,12 @@ func Run(healthPort, monitoringPort int32, leaderElection bool, leaderElectionID
 	exitOnError(mgr.Start(signals.SetupSignalHandler()), "manager exited non-zero")
 }
 
-// findOrCreateIntegrationPlatform create default integration platform in operator namespace if not already exists
+// findOrCreateIntegrationPlatform create default integration platform in operator namespace if not already exists.
 func findOrCreateIntegrationPlatform(ctx context.Context, c client.Client, operatorNamespace string) error {
-	platformName := defaults.OperatorID()
-	if platformName == "" {
+	var platformName string
+	if defaults.OperatorID() != "" {
+		platformName = defaults.OperatorID()
+	} else {
 		platformName = platform.DefaultPlatformName
 	}
 
